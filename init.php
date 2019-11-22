@@ -199,9 +199,14 @@
         curl_close($ch);
         
         $extracted_content = $output->content;
+        $lead_image_url = $output->lead_image_url;
         
         if ($extracted_content)
         {
+            if ($lead_image_url) {
+                $extracted_content = '<div><img src="' . $lead_image_url . '" /></div>' . $extracted_content;
+            }
+            
             $article["content"] = $extracted_content;
         }
 
