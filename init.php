@@ -204,7 +204,10 @@
         if ($extracted_content)
         {
             if ($lead_image_url) {
-                $extracted_content = '<div><img src="' . $lead_image_url . '" /></div>' . $extracted_content;
+                # Only add lead image if not found in page content
+                if ( !strstr( $extracted_content, $lead_image_url ) ) {
+                    $extracted_content = '<div><img src="' . $lead_image_url . '" /></div>' . $extracted_content;
+                }
             }
             
             $article["content"] = $extracted_content;
