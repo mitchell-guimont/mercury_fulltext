@@ -21,6 +21,9 @@
         $this
             ->host
             ->set($this, "mercury_API", $_POST["mercury_API"]);
+        $this
+            ->host
+            ->set($this, "mercury_api_key", $_POST["mercury_api_key"]);
         echo __("Your self-hosted Mercury Parser API Endpoint.");
     }
     function init($host)
@@ -82,6 +85,16 @@
             print "<input dojoType='dijit.form.ValidationTextBox' required='1' name='mercury_API' value='$mercury_API'/>";
 
             print "<label for='mercury_API'>" . __("Your self-hosted Mercury Parser API address (including the port number), eg https://mercury.parser.com:3000.") . "</label>";
+
+            print "<p>";
+            
+            $mercury_api_key = $this
+                ->host
+                ->get($this, "mercury_api_key");
+
+            print "<input dojoType='dijit.form.ValidationTextBox' name='mercury_api_key' value='$mercury_api_key'/>";
+
+            print "<label for='mercury_api_key'>" . __("Your self-hosted Mercury Parser API key") . "</label>";
 
             print "<p>";
             print print_button("submit", __("Save"), "class='alt-primary'");
@@ -188,11 +201,22 @@
         $api_endpoint = $this
             ->host
             ->get($this, "mercury_API");
+        
+        $mercury_api_key = $this
+            ->host
+            ->get($this, "mercury_api_key");
             
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_URL, rtrim($api_endpoint, '/') . '/parser?url=' . rawurlencode($url));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_ENCODING, "UTF-8");
+        
+        # Add AWS API key, if defined
+        if ($mercury_api_key) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                'x-api-key: ' . $mercury_api_key
+            ));
+        }
         
         $output = json_decode(curl_exec($ch));
         
@@ -203,9 +227,25 @@
         
         if ($extracted_content)
         {
-            if ($lead_image_url) {
-                # Only add lead image if not found in page content
-                if ( !strstr( $extracted_content, $lead_image_url ) ) {
+            # Only add lead image if the image is not found in article content
+            if ($lead_image_url)
+            {
+                # Check if lead image name is in the query string
+                if (parse_url($lead_image_url, PHP_URL_QUERY)) 
+                {
+                    $haystack = str_replace('&amp;', '&', $extracted_content);
+                    $needle = $lead_image_url;
+                } else 
+                {
+                    $haystack = $extracted_content;
+                    $image_file = new SplFileInfo($lead_image_url);
+                    
+                    # The search is done with only the file name (excluding extension) because sometimes different size images have different file names/paths
+                    $needle = rtrim($image_file->getBasename($image_file->getExtension()), '.');
+                }
+                
+                if (!strstr($haystack, $needle)) 
+                {
                     $extracted_content = '<div><img src="' . $lead_image_url . '" /></div>' . $extracted_content;
                 }
             }
