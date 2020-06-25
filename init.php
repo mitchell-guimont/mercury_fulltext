@@ -282,11 +282,11 @@
                 foreach($items as $item) {
                     $imgSrcSet = $item->getAttribute('srcset');
                     $imgSrcSetArray = explode(", ", $imgSrcSet);
-                    $item->setAttribute('imgSrcSetArray-count', count($imgSrcSetArray));
-                    $item->setAttribute('imgSrcSetArray2', $imgSrcSetArray[count($imgSrcSetArray) - 1]);
-                    $singleImgArray = explode(" ", $imgSrcSetArray[count($imgSrcSetArray) - 1]);
-                    $item->setAttribute('src', $singleImgArray[0]);
-                    $item->removeAttribute("srcset");
+                    if (is_array($imgSrcSetArray)) {
+                        $singleImgArray = explode(" ", $imgSrcSetArray[count($imgSrcSetArray) - 1]);
+                        $item->setAttribute('src', $singleImgArray[0]);
+                        $item->removeAttribute("srcset");
+                    }
                 }
 
                 $extracted_content = $domd->saveHTML();
