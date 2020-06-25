@@ -247,7 +247,49 @@
                 if (!strstr($haystack, $needle)) 
                 {
                     $extracted_content = '<div><img src="' . $lead_image_url . '" /></div>' . $extracted_content;
+                } else if (strstr($haystack, 'src="data:image') && strstr($haystack, 'srcset="')) {
+                    # If an image "src" is "data:image" and has the attribute "srcset" then set "srcset" as the "src"
+                    $domd = new DOMDocument();
+                    libxml_use_internal_errors(true);
+                    $domd->loadHTML($extracted_content);
+                    libxml_use_internal_errors(false);
+
+                    $domx = new DOMXPath($domd);
+                    $items = $domx->query("//img[@srcset]");
+
+                    foreach($items as $item) {
+                        // Only make this change on the lead image
+                        if (strstr($domd->saveHTML($item), $needle)) {
+                          $item->removeAttribute("srcset");
+                          $item->setAttribute('src', $lead_image_url);
+                        }
+                    }
+
+                    $extracted_content = $domd->saveHTML();
                 }
+            }
+            
+            # Fix all images in article that have "src" equal to "data:image" and has the attribute "srcset"
+            if (strstr($haystack, 'src="data:image') && strstr($haystack, 'srcset="')) {
+                $domd = new DOMDocument();
+                libxml_use_internal_errors(true);
+                $domd->loadHTML($extracted_content);
+                libxml_use_internal_errors(false);
+
+                $domx = new DOMXPath($domd);
+                $items = $domx->query("//img[@srcset]");
+
+                foreach($items as $item) {
+                    $imgSrcSet = $item->getAttribute('srcset');
+                    $imgSrcSetArray = explode(", ", $imgSrcSet);
+                    $item->setAttribute('imgSrcSetArray-count', count($imgSrcSetArray));
+                    $item->setAttribute('imgSrcSetArray2', $imgSrcSetArray[count($imgSrcSetArray) - 1]);
+                    $singleImgArray = explode(" ", $imgSrcSetArray[count($imgSrcSetArray) - 1]);
+                    $item->setAttribute('src', $singleImgArray[0]);
+                    $item->removeAttribute("srcset");
+                }
+
+                $extracted_content = $domd->saveHTML();
             }
             
             $article["content"] = $extracted_content;
