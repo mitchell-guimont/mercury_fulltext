@@ -74,9 +74,9 @@
                 }
                 </script>";
 
-            print_hidden("op", "pluginhandler");
-            print_hidden("method", "save");
-            print_hidden("plugin", "mercury_fulltext");
+            print \Controls\hidden_tag("op", "pluginhandler");
+            print \Controls\hidden_tag("method", "save");
+            print \Controls\hidden_tag("plugin", "mercury_fulltext");
 
             $mercury_API = $this
                 ->host
