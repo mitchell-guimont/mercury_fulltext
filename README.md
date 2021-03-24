@@ -5,6 +5,7 @@
 * Added **lead_image_url** to returned article content.
 * Fixed "invalid" responsive images in article content.
 
+## General Info
 A Tiny Tiny RSS plugin written for [tt-rss](https://tt-rss.org) as a replacement for the grandpa-old plugin [af_readability](https://git.tt-rss.org/fox/tt-rss/src/master/plugins/af_readability), which doesn't work well for many RSS sites I subscribe to.
 
 The plugin supports real time extraction:
