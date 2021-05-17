@@ -264,7 +264,7 @@ class mercury_fulltext extends Plugin
         }
         
         # Fix all images in article that have "src" equal to "data:image" and has the attribute "srcset"
-        if (strstr($haystack, 'src="data:image') && strstr($haystack, 'srcset="')) {
+        if (strstr($content, 'src="data:image') && strstr($content, 'srcset="')) {
             $domd = new DOMDocument();
             libxml_use_internal_errors(true);
             $domd->loadHTML($content);
